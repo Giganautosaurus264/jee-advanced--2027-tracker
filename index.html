@@ -194,7 +194,11 @@ function renderSchedule(){
  document.getElementById('capacity').value=capacity;
  document.getElementById('scopeDate').textContent='Plan for '+formatDate(effective)+' · '+(days||0)+' calendar days available including today';
  let scope=[],used=0;for(const t of todo){if(used>=pace&&scope.length)break;scope.push(t);used+=t.unit}
- const daily=document.getElementById('dailyScope');daily.innerHTML=scope.length?scope.map(t=>`<div class="scope-item"><input type="checkbox" id="scope-${t.i}-${t.j}" onchange="toggleTask(${t.i},${t.j})"><label for="scope-${t.i}-${t.j}">${t.name}<small>${data[t.i].name} · ${t.unit.toFixed(2)} weighted units</small></label></div>`).join(''):'<p>All first-pass tasks are checked. Use remaining time for revision and diagnostic tests.</p>';
+ const daily=document.getElementById('dailyScope');
+ const completedTasks=[];
+ data.forEach((a,i)=>a.skills.forEach((sk,j)=>{if(isDone(i,j))completedTasks.push({i,j,name:sk.name})}));
+ const taskRow=(t,checked)=>`<div class="scope-item"><input type="checkbox" id="scope-${t.i}-${t.j}" ${checked?'checked':''} onchange="toggleTask(${t.i},${t.j})"><label for="scope-${t.i}-${t.j}">${t.name}<small>${data[t.i].name} · ${checked?'Completed':'Pending'}</small></label></div>`;
+ daily.innerHTML=(scope.map(t=>taskRow(t,false)).join('')||'<p>No pending tasks in today’s plan.</p>')+(completedTasks.length?`<details open><summary>Completed topics (${completedTasks.length}) — uncheck to undo</summary>${completedTasks.map(t=>taskRow(t,true)).join('')}</details>`:'');
  let acc=0;const rows=[];data.forEach((a,i)=>{
   const rem=a.skills.map((sk,j)=>({j,unit:a.weight/a.skills.length})).filter(t=>!isDone(i,t.j));
   let remaining=rem.reduce((x,t)=>x+t.unit,0);acc+=remaining;
