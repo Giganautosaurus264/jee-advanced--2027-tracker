@@ -148,6 +148,11 @@ const totalDays=dayIndex(TRACK_TARGET);
 const todayKey=()=>{const f=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'});return f.format(new Date())};
 const getSaved=(k,fallback)=>{try{return JSON.parse(localStorage.getItem(k))??fallback}catch{return fallback}};
 let checkins=getSaved('jee27_study_checkins',[]);
+// Confirmed attendance for 14–18 October 2026: studied 14, 15, 17, 18; missed 16.
+// Reconcile earlier browser-saved data without discarding dates outside this window.
+const confirmedStudyDays=['2026-10-14','2026-10-15','2026-10-17','2026-10-18'];
+checkins=[...new Set([...checkins.filter(d=>d!=='2026-10-16'),...confirmedStudyDays])].sort();
+localStorage.setItem('jee27_study_checkins',JSON.stringify(checkins));
 let progressHistory=getSaved('jee27_progress_history',[{date:TRACK_START,value:5}]);
 // Record only today's confirmed study session; preserve all existing browser history.
 if(!checkins.includes('2026-10-18')){checkins.push('2026-10-18');checkins.sort();localStorage.setItem('jee27_study_checkins',JSON.stringify(checkins));}
