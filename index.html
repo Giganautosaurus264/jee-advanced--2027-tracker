@@ -166,7 +166,9 @@ function saveProgress(){let value=Number(document.getElementById('progressInput'
 function setChartMode(mode){chartMode=mode;renderTracking()}
 function calcStreak(){let s=new Set(checkins);let d=new Date(todayKey()+'T00:00:00Z');if(!s.has(d.toISOString().slice(0,10)))d.setUTCDate(d.getUTCDate()-1);let n=0;while(s.has(d.toISOString().slice(0,10))){n++;d.setUTCDate(d.getUTCDate()-1)}return n}
 function renderTracking(){const today=todayKey(),todayX=Math.max(0,Math.min(totalDays,dayIndex(today)));const latest=progressHistory[progressHistory.length-1]?.value??5;document.getElementById('progressInput').value=latest;document.getElementById('streakNum').textContent=calcStreak()+' days';let left=Math.max(0,dayIndex(TRACK_TARGET)-dayIndex(today));document.getElementById('daysLeft').textContent=left;document.getElementById('pace').textContent=left>0?((100-latest)/left*7).toFixed(1)+'%/week':(latest>=100?'Done':'Overdue');
-let pts=progressHistory.map(p=>({x:Math.max(0,Math.min(totalDays,dayIndex(p.date))),y:p.value})).filter(p=>Number.isFinite(p.x));
+let pts=progressHistory.filter(p=>p.date!==today).map(p=>({x:Math.max(0,Math.min(totalDays,dayIndex(p.date))),y:p.value})).filter(p=>Number.isFinite(p.x));
+// The current graph point always reflects the live evidence-based coverage, not stale browser history.
+pts.push({x:todayX,y:measuredProgress});pts.sort((a,b)=>a.x-b.x);
 let projectX=(x)=>55+x/totalDays*805,projectY=(v)=>270-v/100*230;
 let poly=(arr,color,dash='')=>`<polyline fill="none" stroke="${color}" stroke-width="3" ${dash?'stroke-dasharray="'+dash+'"':''} points="${arr.map(p=>projectX(p.x)+','+projectY(p.y)).join(' ')}"/>`;
 let plan=[{x:0,y:5},{x:totalDays,y:100}];
